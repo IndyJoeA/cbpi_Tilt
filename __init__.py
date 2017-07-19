@@ -2,7 +2,7 @@
 import threading
 import time
 from modules import cbpi
-from modules.core.hardware import SensorActive
+from modules.core.hardware import SensorPassive
 from modules.core.props import Property
 
 import bluetooth._bluetooth as bluez
@@ -71,7 +71,7 @@ def readTilt():
 
 def logTilt(text):
 	filename = "./logs/tilt.log"
-	formatted_time = strftime("%Y-%m-%d %H:%M:%S", localtime())
+	formatted_time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
 
 	with open(filename, "a") as file:
 		file.write("%s,%s\n" % (formatted_time, text))
