@@ -23,11 +23,11 @@ TILTS = {
 }
 
 def calcGravity(gravity, unitsGravity):
-	sg = float(round(gravity/1000, 3))
-	if unitsGravity == "°P":
+	sg = round(float(gravity)/1000, 3)
+	if unitsGravity == u"°P":
 		# Source: https://en.wikipedia.org/wiki/Brix
 		return round(((182.4601 * sg -775.6821) * sg + 1262.7794) * sg - 669.5622, 2)
-	elif unitsGravity == "Brix":
+	elif unitsGravity == u"Brix":
 		# Source: https://en.wikipedia.org/wiki/Brix
 		return round(((182.4601 * sg -775.6821) * sg + 1262.7794) * sg - 669.5622, 2)
 	else:
@@ -82,7 +82,7 @@ class TiltHydrometer(SensorPassive):
 	color = Property.Select("Tilt Color", options=["Red", "Green", "Black", "Purple", "Orange", "Blue", "Yellow", "Pink"])
 	sensorType = Property.Select("Data Type", options=["Temperature", "Gravity"])
 	unitsGravity = Property.Select("Gravity Units", options=["SG", "Brix", "°P"])
-	
+
 	def get_unit(self):
 		if self.sensorType == "Temperature":
 			return "°C" if self.get_config_parameter("unit", "C") == "C" else "°F"
