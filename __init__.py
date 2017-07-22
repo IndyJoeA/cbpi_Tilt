@@ -66,7 +66,7 @@ def readTilt(cache):
 					if beacon['uuid'] in TILTS.keys():
 						cache[TILTS[beacon['uuid']]] = {'Temp': beacon['major'], 'Gravity': beacon['minor']}
 						#logTilt("Tilt data received: Temp %s Gravity %s" % (beacon['major'], beacon['minor']))
-				time.sleep(2)
+				time.sleep(4)
 		except Exception as e:
 			logTilt("Error starting Bluetooth device, exception: %s" % str(e))
 
