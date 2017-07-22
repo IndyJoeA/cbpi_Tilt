@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import threading
+from multiprocessing import Process, Manager
 import time
 from modules import cbpi
 from modules.core.hardware import SensorPassive
@@ -8,7 +8,8 @@ from modules.core.props import Property
 import bluetooth._bluetooth as bluez
 import blescan
 
-tilt_thread = None
+tilt_proc = None
+tilt_manager = None
 tilt_cache = {}
 
 TILTS = {
@@ -49,25 +50,28 @@ def distinct(objects):
 			seen.add(obj['uuid'])
 	return unique
 
-def readTilt():
-	global tilt_cache
+def readTilt(cache):
 	dev_id = 0
-	try:
-		logTilt("Starting Bluetooth connection")
+	while True:
+		try:
+			logTilt("Starting Bluetooth connection")
 		
-		sock = bluez.hci_open_dev(dev_id)
-		blescan.hci_le_set_scan_parameters(sock)
-		blescan.hci_enable_le_scan(sock)	
+			sock = bluez.hci_open_dev(dev_id)
+			blescan.hci_le_set_scan_parameters(sock)
+			blescan.hci_enable_le_scan(sock)	
 	
-		while True:
-			beacons = distinct(blescan.parse_events(sock, 10))
-			for beacon in beacons:
-				if beacon['uuid'] in TILTS.keys():
-					tilt_cache[TILTS[beacon['uuid']]] = {'Temp': beacon['major'], 'Gravity': beacon['minor']}
-					logTilt("Tilt data received: Temp %s Gravity %s" % (beacon['major'], beacon['minor']))
-			time.sleep(4)
-	except Exception as e:
-		logTilt("Error starting Bluetooth device, exception: %s" % str(e))
+			while True:
+				beacons = distinct(blescan.parse_events(sock, 10))
+				for beacon in beacons:
+					if beacon['uuid'] in TILTS.keys():
+						cache[TILTS[beacon['uuid']]] = {'Temp': beacon['major'], 'Gravity': beacon['minor']}
+						#logTilt("Tilt data received: Temp %s Gravity %s" % (beacon['major'], beacon['minor']))
+				time.sleep(2)
+		except Exception as e:
+			logTilt("Error starting Bluetooth device, exception: %s" % str(e))
+
+		logTilt("Restarting Bluetooth process in 10 seconds")
+		time.sleep(10)
 
 def logTilt(text):
 	filename = "./logs/tilt.log"
@@ -92,18 +96,23 @@ class TiltHydrometer(SensorPassive):
 			return " "
 			
 	def read(self):
-		if tilt_cache[self.color] is not None:
+		if self.color in tilt_cache:
 			if self.sensorType == "Gravity":
 				reading = calcGravity(tilt_cache[self.color]['Gravity'], self.unitsGravity)
 			else:
 				reading = calcTemp(tilt_cache[self.color]['Temp'])
 			self.data_received(reading)
 			
-@cbpi.initalizer()
+@cbpi.initalizer(order=9999)
 def init(cbpi):
-	global tilt_thread	
+	global tilt_proc
+	global tilt_manager
+	global tilt_cache	
 	print "INITIALIZE TILT MODULE"
 	
-	tilt_thread = threading.Thread(name='readTilt', target=readTilt)
-	tilt_thread.setDaemon(True)
-	tilt_thread.start()
+	tilt_manager = Manager()
+	tilt_cache = tilt_manager.dict()
+
+	tilt_proc = Process(name='readTilt', target=readTilt, args=(tilt_cache,))
+	tilt_proc.daemon = True
+	tilt_proc.start()
