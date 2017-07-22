@@ -16,7 +16,8 @@ This plugin is based on the work of several others who developed the necessary B
 
 ## Installation
 1. First, you must install the library that will allow the plugin to communicate with the Tilt over Bluetooth. Open a terminal window on your Raspberry Pi or use SSH and run the following command: `sudo apt-get install python-bluez`
-2. Click the **System** menu in CraftBeerPi, and then click **Add-On**.  Install the Tilt plugin by clicking the **Download** button, and when you receive a notification, reboot the Raspberry Pi.
+2. Run the following command to allow the Bluetooth device to be acessible by any user: `sudo setcap cap_net_raw+eip /usr/bin/python2.7`
+3. Click the **System** menu in CraftBeerPi, and then click **Add-On**.  Install the Tilt plugin by clicking the **Download** button, and when you receive a notification, reboot the Raspberry Pi.
 
 ## Configuration
 
