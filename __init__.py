@@ -83,9 +83,9 @@ def logTilt(text):
 @cbpi.sensor
 class TiltHydrometer(SensorPassive):
 
-	color = Property.Select("Tilt Color", options=["Red", "Green", "Black", "Purple", "Orange", "Blue", "Yellow", "Pink"])
-	sensorType = Property.Select("Data Type", options=["Temperature", "Gravity"])
-	unitsGravity = Property.Select("Gravity Units", options=["SG", "Brix", "°P"])
+	color = Property.Select("Tilt Color", options=["Red", "Green", "Black", "Purple", "Orange", "Blue", "Yellow", "Pink"], description="Select the color of your Tilt")
+	sensorType = Property.Select("Data Type", options=["Temperature", "Gravity"], description="Select which type of data to register for this sensor")
+	unitsGravity = Property.Select("Gravity Units", options=["SG", "Brix", "°P"], description="Converts the gravity reading to this unit if the Data Type is set to Gravity")
 
 	def get_unit(self):
 		if self.sensorType == "Temperature":
