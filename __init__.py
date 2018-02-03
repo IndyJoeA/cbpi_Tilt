@@ -23,7 +23,7 @@ TILTS = {
 	'a495bb80c5b14b44b5121370f02d74de': 'Pink',
 }
 
-def calcGravity(gravity, unitsGravity, tuningPolynom):
+def calcGravity(gravity, unitsGravity):
 	sg = round(float(gravity)/1000, 3)
 	if unitsGravity == u"°P":
 		# Source: https://en.wikipedia.org/wiki/Brix
@@ -34,7 +34,7 @@ def calcGravity(gravity, unitsGravity, tuningPolynom):
 	else:
 		return sg
 
-def calcTemp(temp, tuningPolynom):
+def calcTemp(temp):
 	f = float(temp)
 	if cbpi.get_config_parameter("unit", "C") == "C":
 		return round((f - 32) / 1.8, 2)
@@ -42,10 +42,10 @@ def calcTemp(temp, tuningPolynom):
 		return round(f, 2)
 
 def calibrate(tilt, tuningPolynom):
-	if tuningPolynom is None:
-		return tilt
-	else:
+	if tuningPolynom:
 		return eval(tuningPolynom)
+	else:
+		return tilt
 	
 def distinct(objects):
 	seen = set()
