@@ -42,7 +42,7 @@ def calcTemp(temp):
 		return round(f, 2)
 
 def calibrate(tilt, tuningPolynom):
-	if tuningPolynom:
+	if isinstance(tuningPolynom, unicode) and tuningPolynom:
 		return eval(tuningPolynom)
 	else:
 		return tilt
