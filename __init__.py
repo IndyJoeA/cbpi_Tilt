@@ -23,7 +23,7 @@ TILTS = {
 	'a495bb80c5b14b44b5121370f02d74de': 'Pink',
 }
 
-def calcGravity(gravity, unitsGravity):
+def calcGravity(gravity, unitsGravity, tuningPolynom):
 	sg = round(float(gravity)/1000, 3)
 	if unitsGravity == u"°P":
 		# Source: https://en.wikipedia.org/wiki/Brix
@@ -34,13 +34,20 @@ def calcGravity(gravity, unitsGravity):
 	else:
 		return sg
 
-def calcTemp(temp):
+def calcTemp(temp, tuningPolynom):
 	f = float(temp)
 	if cbpi.get_config_parameter("unit", "C") == "C":
 		return round((f - 32) / 1.8, 2)
 	else:
 		return round(f, 2)
 
+def calibrate(value, tuningPolynom):
+	tilt = value
+	if tuningPolynom is None:
+		return tilt
+	else:
+		return eval(tuningPolynom)
+	
 def distinct(objects):
 	seen = set()
 	unique = []
@@ -85,6 +92,7 @@ class TiltHydrometer(SensorPassive):
 
 	color = Property.Select("Tilt Color", options=["Red", "Green", "Black", "Purple", "Orange", "Blue", "Yellow", "Pink"], description="Select the color of your Tilt")
 	sensorType = Property.Select("Data Type", options=["Temperature", "Gravity"], description="Select which type of data to register for this sensor")
+	tuningPolynom = Property.Text(label="Tuning Polynomial", configurable=True, default_value="", description="Optional field that lets you enter a polynomial to calibrate your Tilt. Use the variable tilt to represent the data from the Tilt. Does not support ^ character.")
 	unitsGravity = Property.Select("Gravity Units", options=["SG", "Brix", "°P"], description="Converts the gravity reading to this unit if the Data Type is set to Gravity")
 
 	def get_unit(self):
@@ -98,9 +106,9 @@ class TiltHydrometer(SensorPassive):
 	def read(self):
 		if self.color in tilt_cache:
 			if self.sensorType == "Gravity":
-				reading = calcGravity(tilt_cache[self.color]['Gravity'], self.unitsGravity)
+				reading = calcGravity(calibrate(tilt_cache[self.color]['Gravity']), self.unitsGravity)
 			else:
-				reading = calcTemp(tilt_cache[self.color]['Temp'])
+				reading = calcTemp(calibrate(tilt_cache[self.color]['Temp']))
 			self.data_received(reading)
 			
 @cbpi.initalizer(order=9999)
