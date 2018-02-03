@@ -41,8 +41,7 @@ def calcTemp(temp, tuningPolynom):
 	else:
 		return round(f, 2)
 
-def calibrate(value, tuningPolynom):
-	tilt = value
+def calibrate(tilt, tuningPolynom):
 	if tuningPolynom is None:
 		return tilt
 	else:
@@ -106,9 +105,11 @@ class TiltHydrometer(SensorPassive):
 	def read(self):
 		if self.color in tilt_cache:
 			if self.sensorType == "Gravity":
-				reading = calcGravity(calibrate(tilt_cache[self.color]['Gravity']), self.unitsGravity)
+				reading = calibrate(tilt_cache[self.color]['Gravity'], self.tuningPolynom)
+				reading = calcGravity(reading, self.unitsGravity)
 			else:
-				reading = calcTemp(calibrate(tilt_cache[self.color]['Temp']))
+				reading = calibrate(tilt_cache[self.color]['Temp'], self.tuningPolynom)
+				reading = calcTemp(reading)
 			self.data_received(reading)
 			
 @cbpi.initalizer(order=9999)
