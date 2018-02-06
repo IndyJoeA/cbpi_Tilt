@@ -29,27 +29,27 @@ TILTS = {
 def add_calibration_point(x, y, field):
 	if isinstance(field, unicode) and field:
 		x1, y1 = field.split("=")
-		x = np.append(x, x1)
-		y = np.append(y, y1)
-		return(x, y)
+		x = np.append(x, float(x1))
+		y = np.append(y, float(y1))
+		return x, y
 
 def calcGravity(gravity, unitsGravity):
-	sg = round(float(gravity)/1000, 3)
+	sg = float(gravity)/1000
 	if unitsGravity == u"°P":
 		# Source: https://en.wikipedia.org/wiki/Brix
-		return round(((182.4601 * sg -775.6821) * sg + 1262.7794) * sg - 669.5622, 2)
+		return round(calibrate(((182.4601 * sg -775.6821) * sg + 1262.7794) * sg - 669.5622), 2)
 	elif unitsGravity == u"Brix":
 		# Source: https://en.wikipedia.org/wiki/Brix
-		return round(((182.4601 * sg -775.6821) * sg + 1262.7794) * sg - 669.5622, 2)
+		return round(calibrate(((182.4601 * sg -775.6821) * sg + 1262.7794) * sg - 669.5622), 2)
 	else:
-		return sg
+		return round(calibrate(sg), 3)
 
 def calcTemp(temp):
 	f = float(temp)
 	if cbpi.get_config_parameter("unit", "C") == "C":
-		return round((f - 32) / 1.8, 2)
+		return round(calibrate((f - 32) / 1.8), 2)
 	else:
-		return round(f, 2)
+		return round(calibrate(f), 2)
 
 def calibrate(tilt):
 	return eval(calibration_equ)
@@ -105,7 +105,8 @@ class TiltHydrometer(SensorPassive):
 	
 	def init(self):
 		# Load calibration data from plugin
-		x, y = None
+		x = np.empty([0])
+		y = np.empty([0])
 		x, y = add_calibration_point(x, y, self.x_cal_1)
 		x, y = add_calibration_point(x, y, self.x_cal_2)
 		x, y = add_calibration_point(x, y, self.x_cal_3)
@@ -118,7 +119,9 @@ class TiltHydrometer(SensorPassive):
 		if len(x) > 1:
 			A = np.vstack([x, np.ones(len(x))]).T
 			m, c = np.linalg.lstsq(A, y)[0]
-			calibration_equ = '{0}*tilt + {1}'.format(m, c)		
+			calibration_equ = '{0}*tilt + {1}'.format(m, c)
+			
+		logTilt('Calibration equation: {0}'.format(calibration_equ))
 	
 	def get_unit(self):
 		if self.sensorType == "Temperature":
@@ -131,11 +134,9 @@ class TiltHydrometer(SensorPassive):
 	def read(self):
 		if self.color in tilt_cache:
 			if self.sensorType == "Gravity":
-				reading = calibrate(tilt_cache[self.color]['Gravity'])
-				reading = calcGravity(reading, self.unitsGravity)
+				reading = calcGravity(tilt_cache[self.color]['Gravity'], self.unitsGravity)
 			else:
-				reading = calibrate(tilt_cache[self.color]['Temp'])
-				reading = calcTemp(reading)
+				reading = calcTemp(tilt_cache[self.color]['Temp'])
 			self.data_received(reading)
 			
 @cbpi.initalizer(order=9999)
