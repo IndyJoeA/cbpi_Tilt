@@ -8,6 +8,9 @@ from modules.core.props import Property
 import bluetooth._bluetooth as bluez
 import blescan
 
+import numpy as np
+
+calibration_equ = ""
 tilt_proc = None
 tilt_manager = None
 tilt_cache = {}
@@ -22,6 +25,13 @@ TILTS = {
 	'a495bb70c5b14b44b5121370f02d74de': 'Yellow',
 	'a495bb80c5b14b44b5121370f02d74de': 'Pink',
 }
+
+def add_calibration_point(x, y, field):
+	if isinstance(field, unicode) and field:
+		x1, y1 = field.split("=")
+		x = np.append(x, x1)
+		y = np.append(y, y1)
+		return(x, y)
 
 def calcGravity(gravity, unitsGravity):
 	sg = round(float(gravity)/1000, 3)
@@ -41,11 +51,8 @@ def calcTemp(temp):
 	else:
 		return round(f, 2)
 
-def calibrate(tilt, tuningPolynom):
-	if isinstance(tuningPolynom, unicode) and tuningPolynom:
-		return eval(tuningPolynom)
-	else:
-		return tilt
+def calibrate(tilt):
+	return eval(calibration_equ)
 	
 def distinct(objects):
 	seen = set()
@@ -90,10 +97,29 @@ def logTilt(text):
 class TiltHydrometer(SensorPassive):
 
 	color = Property.Select("Tilt Color", options=["Red", "Green", "Black", "Purple", "Orange", "Blue", "Yellow", "Pink"], description="Select the color of your Tilt")
-	sensorType = Property.Select("Data Type", options=["Temperature", "Gravity"], description="Select which type of data to register for this sensor")
-	tuningPolynom = Property.Text(label="Tuning Polynomial", configurable=True, default_value="", description="Optional field that lets you enter a polynomial to calibrate your Tilt. Use the variable tilt to represent the data from the Tilt. Does not support ^ character.")
+	sensorType = Property.Select("Data Type", options=["Temperature", "Gravity"], description="Select which type of data to register for this sensor")	
 	unitsGravity = Property.Select("Gravity Units", options=["SG", "Brix", "°P"], description="Converts the gravity reading to this unit if the Data Type is set to Gravity")
-
+	x_cal_1 = Property.Text(label="Calibration Point 1", configurable=True, default_value="", description="Optional field for calibrating your Tilt. Enter data in the format uncalibrated=actual")
+	x_cal_2 = Property.Text(label="Calibration Point 2", configurable=True, default_value="", description="Optional field for calibrating your Tilt. Enter data in the format uncalibrated=actual")
+	x_cal_3 = Property.Text(label="Calibration Point 3", configurable=True, default_value="", description="Optional field for calibrating your Tilt. Enter data in the format uncalibrated=actual")
+	
+	def init(self):
+		# Load calibration data from plugin
+		x, y = None
+		x, y = add_calibration_point(x, y, self.x_cal_1)
+		x, y = add_calibration_point(x, y, self.x_cal_2)
+		x, y = add_calibration_point(x, y, self.x_cal_3)
+		
+		# Create calibration equation
+		if len(x) < 1:
+			calibration_equ = "tilt"
+		if len(x) == 1:
+			calibration_equ = 'tilt + {0}'.format(y[0] - x[0])
+		if len(x) > 1:
+			A = np.vstack([x, np.ones(len(x))]).T
+			m, c = np.linalg.lstsq(A, y)[0]
+			calibration_equ = '{0}*tilt + {1}'.format(m, c)		
+	
 	def get_unit(self):
 		if self.sensorType == "Temperature":
 			return "°C" if self.get_config_parameter("unit", "C") == "C" else "°F"
@@ -105,10 +131,10 @@ class TiltHydrometer(SensorPassive):
 	def read(self):
 		if self.color in tilt_cache:
 			if self.sensorType == "Gravity":
-				reading = calibrate(tilt_cache[self.color]['Gravity'], self.tuningPolynom)
+				reading = calibrate(tilt_cache[self.color]['Gravity'])
 				reading = calcGravity(reading, self.unitsGravity)
 			else:
-				reading = calibrate(tilt_cache[self.color]['Temp'], self.tuningPolynom)
+				reading = calibrate(tilt_cache[self.color]['Temp'])
 				reading = calcTemp(reading)
 			self.data_received(reading)
 			
