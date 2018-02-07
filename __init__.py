@@ -31,7 +31,7 @@ def add_calibration_point(x, y, field):
 		x1, y1 = field.split("=")
 		x = np.append(x, float(x1))
 		y = np.append(y, float(y1))
-		return x, y
+	return x, y
 
 def calcGravity(gravity, unitsGravity):
 	sg = float(gravity)/1000
@@ -104,6 +104,8 @@ class TiltHydrometer(SensorPassive):
 	x_cal_3 = Property.Text(label="Calibration Point 3", configurable=True, default_value="", description="Optional field for calibrating your Tilt. Enter data in the format uncalibrated=actual")
 	
 	def init(self):
+		global calibration_equ
+		
 		# Load calibration data from plugin
 		x = np.empty([0])
 		y = np.empty([0])
