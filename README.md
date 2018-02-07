@@ -37,7 +37,17 @@ sudo setcap cap_net_raw+eip /usr/bin/python2.7
     2. **Type**: Choose TiltHydrometer.
     3. **Tilt Color**: This should be set to the color of your Tilt.
     4. **Data Type**: Each Tilt has two types of data that it reports, the Temperature and Gravity, so select the one that you are configuring for this particular sensor.    
-    5. **Gravity Units**: *This field is only required if Data Type is set to Gravity*. The Tilt converts its readings into Specific Gravity by default. However you can choose one of three types here and it will be converted to that unit automatically. The choices are SG (Specific Gravity), Brix, and °P (Degrees Plato).
+    5. **Gravity Units**: *This field is only required if Data Type is set to Gravity*. The Tilt converts its readings into Specific Gravity by default. However you can choose one of three types here and it will be converted to that unit automatically. The choices are SG (Specific Gravity), Brix (or °Bx), and Plato (or °P).
+    6. **Calibration Point 1-3***: *Optional*. These fields allow you to calibrate your Tilt by entering an uncalibrated reading from the Tilt and then the desired, calibrated value. The format to use is *uncalibrated value*=*actual value*. More info on calibration is in the section below.
     7. Once you have filled out the sensor fields, click **Add**.
 3. Repeat the above steps if you want additional sensors for the other data types that your Tilt reports, or if you have more than one Tilt, you can create sensors for those devices as well.
 4. You can now add any of the Tilt sensors to kettles or fermenters in your brewery, or you can view their data on the dashboard or graph their data with the charts.
+
+### Tilt Calibration
+You can use the Calibration Point fields to calibrate your Tilt, much like when using the standalone Tilt app. Here are some examples of ways you can calibrate your Tilt with this plugin.
+
+- You can perform the *Tare in Water* procedure by placing the Tilt in water, taking a reading, and entering the value in a Calibration Point field in the format **1.002 = 1** (change the first number to your specific reading). 
+- You can take a high and low reading of a solution with a known gravity and enter their readings in the fields Calibration Point 2 & 3.
+- If you enter only a single calibration point, the difference will be applied to every reading equally. So you could enter **0 = 5** if you just want 5 added to every reading that the Tilt takes, or **5 = 0** if you want to subtract 5 from every reading.  If you enter two or more calibration points, a linear relationship between the points will be determined and used to adjust the readings accordingly (known as linear regression).
+- These calibration procedures work the same for both gravity readings and temperature readings, and are calculated after the conversion to the desired units, so you should calibrate your Tilt with the units set to what they will be when you use it for actual brewing.
+
