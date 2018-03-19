@@ -22,11 +22,15 @@ This plugin is based on the work of several others who developed the necessary B
 ```
 sudo apt-get install python-bluez
 ```
-2. Run the following command to allow the Bluetooth device to be acessible by any user: 
+2. Install the NumPy library required by the Tilt plugin:
+```
+sudo pip install numpy
+```
+3. Run the following command to allow the Bluetooth device to be acessible by any user: 
 ```
 sudo setcap cap_net_raw+eip /usr/bin/python2.7
 ```
-3. Click the **System** menu in CraftBeerPi, and then click **Add-On**.  Install the Tilt plugin by clicking the **Download** button, and when you receive a notification, reboot the Raspberry Pi.
+4. Click the **System** menu in CraftBeerPi, and then click **Add-On**.  Install the Tilt plugin by clicking the **Download** button, and when you receive a notification, reboot the Raspberry Pi.
 
 ## Configuration
 
