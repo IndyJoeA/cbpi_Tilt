@@ -15,7 +15,7 @@ This plugin is based on the work of several others who developed the necessary B
 ![tilt2](https://user-images.githubusercontent.com/29404417/28493426-04ad66b4-6ee5-11e7-88f1-84acceb543a4.PNG)
 
 ## Requirements
-:warning: Due to the Tilt's use of Bluetooth, you will need to be using either a Raspberry Pi 3 or a Bluetooth dongle to use this plugin.
+:warning: Due to the Tilt's use of Bluetooth, you will need to be using either a Raspberry Pi with built-in Bluetooth (such as Raspbery Pi 3 or Raspberry Pi Zero W) or a Bluetooth dongle to use this plugin.
 
 ## Installation
 1. First, you must install the library that will allow the plugin to communicate with the Tilt over Bluetooth. Open a terminal window on your Raspberry Pi or use SSH and run the following command: 
