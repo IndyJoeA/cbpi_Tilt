@@ -6,7 +6,7 @@ from modules.core.hardware import SensorPassive
 from modules.core.props import Property
 
 import bluetooth._bluetooth as bluez
-import blescan
+from . import blescan
 
 import numpy as np
 
@@ -26,7 +26,7 @@ TILTS = {
 }
 
 def add_calibration_point(x, y, field):
-	if isinstance(field, unicode) and field:
+	if isinstance(field, str) and field:
 		x1, y1 = field.split("=")
 		x = np.append(x, float(x1))
 		y = np.append(y, float(y1))
@@ -34,10 +34,10 @@ def add_calibration_point(x, y, field):
 
 def calcGravity(gravity, unitsGravity):
 	sg = float(gravity)/1000
-	if unitsGravity == u"Plato" or unitsGravity == u"°P":
+	if unitsGravity == "Plato" or unitsGravity == "°P":
 		# Source: https://en.wikipedia.org/wiki/Brix
 		return ((135.997 * sg - 630.272) * sg + 1111.14) * sg - 616.868
-	elif unitsGravity == u"Brix" or unitsGravity == u"°Bx":
+	elif unitsGravity == "Brix" or unitsGravity == "°Bx":
 		# Source: https://en.wikipedia.org/wiki/Brix
 		return ((182.4601 * sg - 775.6821) * sg + 1262.7794) * sg - 669.5622
 	else:
@@ -75,7 +75,7 @@ def readTilt(cache):
 			while True:
 				beacons = distinct(blescan.parse_events(sock, 10))
 				for beacon in beacons:
-					if beacon['uuid'] in TILTS.keys():
+					if beacon['uuid'] in list(TILTS.keys()):
 						cache[TILTS[beacon['uuid']]] = {'Temp': beacon['major'], 'Gravity': beacon['minor']}
 						#logTilt("Tilt data received: Temp %s Gravity %s" % (beacon['major'], beacon['minor']))
 				time.sleep(4)
@@ -148,7 +148,7 @@ def init(cbpi):
 	global tilt_proc
 	global tilt_manager
 	global tilt_cache	
-	print "INITIALIZE TILT MODULE"
+	print("INITIALIZE TILT MODULE")
 	
 	tilt_manager = Manager()
 	tilt_cache = tilt_manager.dict()
